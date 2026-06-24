@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ফিউচার DCA ক্যালকুলেটর By FaBi</title>
+<style>
+  :root{
+    --bg: #0b0f14;
+    --panel: #11171f;
+    --panel-2: #161d27;
+    --line: #232b36;
+    --text: #e7ecf2;
+    --muted: #8a96a3;
+    --accent-long: #18c787;
+    --accent-long-dim: #18c78722;
+    --accent-short: #ff5d6c;
+    --accent-short-dim: #ff5d6c22;
+    --amber: #f2b84b;
+    --mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    --sans: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:var(--sans); -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{ max-width:480px; margin:0 auto; padding:14px 12px 40px; }
+
+  .header{ display:flex; align-items:flex-start; justify-content:space-between; padding:6px 4px 14px; gap:8px; }
+  .header .title{ font-size:15px; font-weight:700; letter-spacing:0.3px; line-height:1.4; }
+  .header .brand{ color:var(--amber); font-weight:700; font-size:12px; }
+  .header .sub{ font-size:11px; color:var(--muted); margin-top:2px; }
+
+  .typetoggle{ display:flex; background:var(--panel); border-radius:10px; padding:3px; border:1px solid var(--line); flex-shrink:0; }
+  .typetoggle button{
+    border:none; background:transparent; color:var(--muted); font-family:var(--sans);
+    font-weight:700; font-size:12px; padding:7px 14px; border-radius:8px; cursor:pointer;
+    letter-spacing:0.5px; transition:all .15s ease;
+  }
+  .typetoggle button.active.long{ background:var(--accent-long-dim); color:var(--accent-long); }
+  .typetoggle button.active.short{ background:var(--accent-short-dim); color:var(--accent-short); }
+
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px;
+    padding:14px; margin-bottom:12px;
+  }
+  .card-title{
+    font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;
+    letter-spacing:0.8px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .card-title .left{ display:flex; align-items:center; gap:6px; }
+  .card-title .dot{ width:5px; height:5px; border-radius:50%; background:var(--amber); }
+
+  /* DCA rows: # | % | Price | Lev | Size | clear */
+  .dca-colhead{
+    display:grid; grid-template-columns:18px 42px 1fr 1fr 1fr 20px;
+    gap:5px; margin-bottom:7px;
+  }
+  .dca-colhead .colhead{ font-size:8.5px; color:var(--muted); text-align:center; text-transform:uppercase; letter-spacing:0.3px;}
+  .dca-row{
+    display:grid; grid-template-columns:18px 42px 1fr 1fr 1fr 20px;
+    gap:5px; align-items:center; margin-bottom:7px;
+  }
+  .dca-row .lbl{ font-size:10.5px; color:var(--muted); font-weight:600; text-align:center; }
+  .dca-row input{
+    width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    font-family:var(--mono); font-size:12px; padding:7px 3px; border-radius:7px; text-align:center;
+    min-width:0;
+  }
+  .dca-row input.dca-pct{ color:var(--amber); }
+  .dca-row input:disabled{ opacity:0.35; }
+  .dca-row input:focus{ outline:none; border-color:var(--amber); }
+  .dca-row input::placeholder{ color:#4a5563; }
+  .clearbtn{
+    background:none; border:none; color:#4a5563; font-size:15px; cursor:pointer; padding:2px;
+    line-height:1; text-align:center;
+  }
+  .clearbtn:active{ color:var(--accent-short); }
+
+  .addbtn{
+    width:100%; margin-top:4px; background:var(--panel-2); border:1px dashed var(--line);
+    color:var(--amber); font-family:var(--sans); font-weight:700; font-size:12.5px;
+    padding:10px; border-radius:9px; cursor:pointer; letter-spacing:0.3px;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .addbtn:active{ background:#1d2530; }
+
+  .hint{ font-size:10px; color:#5b6573; margin-top:6px; line-height:1.5; }
+
+  .field-row{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;
+  }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size:11px; color:var(--muted); font-weight:600; }
+  .field input{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    font-family:var(--mono); font-size:14px; padding:10px; border-radius:9px; width:100%;
+  }
+  .field input:focus{ outline:none; border-color:var(--amber); }
+  .sl-field input{ border-color:var(--accent-short-dim); }
+
+  /* TP rows: # | Price | Exit% | Size */
+  .tp-colhead{
+    display:grid; grid-template-columns:34px 1fr 1fr 1fr;
+    gap:6px; margin-bottom:7px;
+  }
+  .tp-colhead .colhead{ font-size:9px; color:var(--muted); text-align:center; text-transform:uppercase; letter-spacing:0.3px;}
+  .tp-row{
+    display:grid; grid-template-columns:34px 1fr 1fr 1fr;
+    gap:6px; align-items:center; margin-bottom:7px;
+  }
+  .tp-row .lbl{ font-size:11px; color:var(--accent-long); font-weight:700; text-align:center; }
+  .tp-row input{
+    width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    font-family:var(--mono); font-size:13px; padding:8px 5px; border-radius:7px; text-align:center;
+    min-width:0;
+  }
+  .tp-row input:focus{ outline:none; border-color:var(--amber); }
+  .tp-size-display{
+    font-family:var(--mono); font-size:12px; text-align:center; color:var(--muted);
+    background:var(--panel-2); border:1px dashed var(--line); border-radius:7px; padding:8px 4px;
+  }
+  .tp-total-row{
+    display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted);
+    margin-top:6px; padding-top:8px; border-top:1px dashed var(--line);
+  }
+  .tp-total-row .val{ font-family:var(--mono); font-weight:700; }
+  .val-ok{ color:var(--accent-long); }
+  .val-warn{ color:var(--amber); }
+  .val-over{ color:var(--accent-short); }
+
+  /* Results */
+  .res-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:8px 2px; border-bottom:1px solid var(--line);
+  }
+  .res-row:last-child{ border-bottom:none; }
+  .res-row .k{ font-size:12.5px; color:var(--muted); }
+  .res-row .v{ font-family:var(--mono); font-size:13.5px; font-weight:600; }
+  .v.pos{ color:var(--accent-long); }
+  .v.neg{ color:var(--accent-short); }
+  .v.amber{ color:var(--amber); }
+
+  .res-section-title{
+    font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase;
+    letter-spacing:0.6px; margin:14px 0 4px; padding-top:6px;
+  }
+  .res-section-title:first-child{ margin-top:0; padding-top:0; }
+
+  .tp-line{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:7px 2px; border-bottom:1px solid var(--line); gap:8px;
+  }
+  .tp-line .tp-name{ font-weight:700; font-size:11.5px; color:var(--amber); }
+  .tp-line .tp-detail{ font-size:10.5px; color:var(--muted); font-family:var(--mono); display:block; margin-top:1px; }
+  .tp-line .tp-pnl{ font-family:var(--mono); font-weight:700; font-size:13.5px; white-space:nowrap; }
+  .tp-empty{ font-size:11.5px; color:#5b6573; padding:6px 2px; text-align:center; }
+
+  .hero-stat{ display:flex; gap:10px; margin-bottom:12px; }
+  .hero-box{
+    flex:1; background:var(--panel-2); border-radius:12px; padding:12px 10px; text-align:center;
+    border:1px solid var(--line);
+  }
+  .hero-box .hv{ font-family:var(--mono); font-size:18px; font-weight:700; }
+  .hero-box .hk{ font-size:10px; color:var(--muted); margin-top:3px; text-transform:uppercase; letter-spacing:0.4px;}
+
+  .rr-banner{
+    display:flex; align-items:center; justify-content:space-between;
+    background:linear-gradient(135deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px;
+  }
+  .rr-banner .rrtext{ font-family:var(--mono); font-size:22px; font-weight:800; color:var(--amber); }
+  .rr-banner .rrlabel{ font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+
+  .liq-strip{
+    display:flex; align-items:center; gap:10px; background:var(--accent-short-dim);
+    border:1px solid #ff5d6c33; border-radius:10px; padding:10px 12px; margin-top:4px;
+  }
+  .liq-strip .ic{ font-size:16px; }
+  .liq-strip .liqval{ font-family:var(--mono); font-weight:700; color:var(--accent-short); font-size:14px; }
+  .liq-strip .liqlabel{ font-size:10px; color:var(--muted); }
+  .liq-strip .liqdist{ font-family:var(--mono); font-weight:700; color:var(--accent-short); font-size:14px; margin-left:auto; text-align:right; }
+  .liq-strip .liqdistlabel{ font-size:10px; color:var(--muted); text-align:right; }
+
+  .margin-input-card{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .margin-input-card input{ flex:1; max-width:140px; }
+
+  .footnote{ font-size:10px; color:#4a5563; text-align:center; margin-top:8px; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div>
+      <div class="title">ফিউচার DCA ক্যালকুলেটর <span class="brand">By FaBi</span></div>
+      <div class="sub">পজিশন সাইজ · PNL · লিকুইডেশন</div>
+    </div>
+    <div class="typetoggle">
+      <button id="btnLong" class="active long">LONG</button>
+      <button id="btnShort" class="short">SHORT</button>
+    </div>
+  </div>
+
+  <!-- DCA Entries -->
+  <div class="card">
+    <div class="card-title">
+      <div class="left"><span class="dot"></span>DCA এন্ট্রি</div>
+    </div>
+    <div class="dca-colhead">
+      <div></div>
+      <div class="colhead">%</div>
+      <div class="colhead">প্রাইস</div>
+      <div class="colhead">লিভারেজ</div>
+      <div class="colhead">সাইজ</div>
+      <div></div>
+    </div>
+    <div id="dcaRows"></div>
+    <button class="addbtn" id="addRowBtn">+ DCA এন্ট্রি যোগ করো</button>
+    <div class="hint">২য় এন্ট্রি থেকে % ঘরে সংখ্যা দিলে আগের এন্ট্রিগুলোর average price থেকে সেই % দূরত্বে প্রাইস অটো বসবে (LONG = নিচে, SHORT = উপরে)। % ফাঁকা রাখলে প্রাইস ম্যানুয়ালি দিতে পারবেন।</div>
+  </div>
+
+  <!-- Margin Added -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>অতিরিক্ত মার্জিন</div>
+    <div class="margin-input-card">
+      <label style="font-size:12.5px; color:var(--muted);">Margin Added (New)</label>
+      <input type="number" id="marginAdded" inputmode="decimal" placeholder="0" value="0">
+    </div>
+  </div>
+
+  <!-- Take Profit -->
+  <div class="card">
+    <div class="card-title"><span class="left"><span class="dot"></span>টেক প্রফিট (TP)</span></div>
+    <div class="tp-colhead">
+      <div></div>
+      <div class="colhead">প্রাইস</div>
+      <div class="colhead">Exit %</div>
+      <div class="colhead">সাইজ</div>
+    </div>
+    <div class="tp-row">
+      <div class="lbl">TP1</div>
+      <input type="number" inputmode="decimal" id="tpPrice1" placeholder="0.00">
+      <input type="number" inputmode="decimal" id="tpPct1" placeholder="%" value="100">
+      <div class="tp-size-display" id="tpSize1">—</div>
+    </div>
+    <div class="tp-row">
+      <div class="lbl">TP2</div>
+      <input type="number" inputmode="decimal" id="tpPrice2" placeholder="0.00">
+      <input type="number" inputmode="decimal" id="tpPct2" placeholder="%">
+      <div class="tp-size-display" id="tpSize2">—</div>
+    </div>
+    <div class="tp-row">
+      <div class="lbl">TP3</div>
+      <input type="number" inputmode="decimal" id="tpPrice3" placeholder="0.00">
+      <input type="number" inputmode="decimal" id="tpPct3" placeholder="%">
+      <div class="tp-size-display" id="tpSize3">—</div>
+    </div>
+    <div class="tp-row">
+      <div class="lbl">TP4</div>
+      <input type="number" inputmode="decimal" id="tpPrice4" placeholder="0.00">
+      <input type="number" inputmode="decimal" id="tpPct4" placeholder="%">
+      <div class="tp-size-display" id="tpSize4">—</div>
+    </div>
+    <div class="tp-total-row">
+      <span>মোট Exit %</span>
+      <span class="val" id="tpTotalPct">0%</span>
+    </div>
+  </div>
+
+  <!-- SL / Fee -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>স্টপ লস ও ফি</div>
+    <div class="field-row">
+      <div class="field sl-field">
+        <label>SL Price</label>
+        <input type="number" id="slPrice" inputmode="decimal" placeholder="0.00">
+      </div>
+      <div class="field">
+        <label>Trading Fee %</label>
+        <input type="number" id="feePct" inputmode="decimal" placeholder="0.04" value="0.04">
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero results -->
+  <div class="hero-stat">
+    <div class="hero-box">
+      <div class="hv" id="hTotalSize">0.00</div>
+      <div class="hk">Total Position</div>
+    </div>
+    <div class="hero-box">
+      <div class="hv" id="hAvgEntry">0.00</div>
+      <div class="hk">Avg Entry Price</div>
+    </div>
+    <div class="hero-box">
+      <div class="hv" id="hLeverage">0.00x</div>
+      <div class="hk">Avg Leverage</div>
+    </div>
+  </div>
+
+  <div class="rr-banner">
+    <div>
+      <div class="rrlabel">Risk : Reward</div>
+      <div class="rrtext" id="rrText">1 : 0.00</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="rrlabel">RR Numeric</div>
+      <div style="font-family:var(--mono); font-weight:700; font-size:15px;" id="rrNumeric">0.00</div>
+    </div>
+  </div>
+
+  <!-- Detailed results -->
+  <div class="card">
+    <div class="res-section-title">পজিশন সামারি</div>
+    <div class="res-row"><span class="k">Total Position Size</span><span class="v" id="rTotalSize">0.00</span></div>
+    <div class="res-row"><span class="k">Weighted Avg Entry Price</span><span class="v" id="rAvgEntry">0.00</span></div>
+    <div class="res-row"><span class="k">Average Leverage</span><span class="v" id="rAvgLev">0.00</span></div>
+    <div class="res-row"><span class="k">Initial Margin</span><span class="v amber" id="rInitMargin">0.00</span></div>
+
+    <div class="res-section-title">প্রফিট (TP অনুযায়ী)</div>
+    <div id="tpBreakdown"><div class="tp-empty">TP প্রাইস ও Exit % দিন</div></div>
+    <div class="res-row"><span class="k">Total Gross PNL</span><span class="v" id="rGrossPnl">0.00</span></div>
+    <div class="res-row"><span class="k">Trading Fee (Entry+Exit)</span><span class="v" id="rFee">0.00</span></div>
+    <div class="res-row"><span class="k">Real PNL</span><span class="v" id="rRealPnl">0.00</span></div>
+    <div class="res-row"><span class="k">ROI (%)</span><span class="v" id="rRoi">0.00%</span></div>
+
+    <div class="res-section-title">লস (SL এ — ফুল পজিশন)</div>
+    <div class="res-row"><span class="k">SL Price Difference (%)</span><span class="v" id="rSlDiff">0.00%</span></div>
+    <div class="res-row"><span class="k">Gross Loss (SL)</span><span class="v" id="rGrossLoss">0.00</span></div>
+    <div class="res-row"><span class="k">Net Loss (SL)</span><span class="v" id="rNetLoss">0.00</span></div>
+    <div class="res-row"><span class="k">ROI % (SL)</span><span class="v" id="rRoiSl">0.00%</span></div>
+
+    <div class="res-section-title">লিকুইডেশন</div>
+    <div class="liq-strip">
+      <div class="ic">⚠️</div>
+      <div>
+        <div class="liqval" id="rLiq">0.00</div>
+        <div class="liqlabel">Liquidation Price</div>
+      </div>
+      <div style="margin-left:auto;">
+        <div class="liqdist" id="rLiqDist">0.00%</div>
+        <div class="liqdistlabel">Avg Entry থেকে দূরত্ব</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footnote">এই হিসাব শুধু ম্যানুয়াল প্ল্যানিং এর জন্য — ফাইনাল লিকুইডেশন প্রাইস এক্সচেঞ্জের মেইনটেন্যান্স মার্জিন রেট অনুযায়ী ভিন্ন হতে পারে। SL সেকশন ধরে নেয় পুরো পজিশন একসাথে SL তে ক্লোজ হচ্ছে।</div>
+
+</div>
+
+<script>
+let tradeType = 'LONG';
+const dcaRowsEl = document.getElementById('dcaRows');
+
+function round2(n){ return Math.round(n*100)/100; }
+function num(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function fmt(n, d=2){
+  if(!isFinite(n)) return '—';
+  return n.toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+function setVal(id, text, cls){
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.classList.remove('pos','neg','amber');
+  if(cls) el.classList.add(cls);
+}
+
+/* ---------- DCA rows ---------- */
+function addRow(){
+  const row = document.createElement('div');
+  row.className = 'dca-row';
+  row.innerHTML = `
+    <div class="lbl"></div>
+    <input type="number" inputmode="decimal" class="dca-pct" placeholder="%">
+    <input type="number" inputmode="decimal" placeholder="প্রাইস" class="dca-price">
+    <input type="number" inputmode="decimal" placeholder="x" class="dca-lev" value="5">
+    <input type="number" inputmode="decimal" placeholder="সাইজ" class="dca-size">
+    <button class="clearbtn" title="রিমুভ">✕</button>
+  `;
+  dcaRowsEl.appendChild(row);
+  refreshRowState();
+  calculate();
+}
+
+function refreshRowState(){
+  const rows = Array.from(dcaRowsEl.querySelectorAll('.dca-row'));
+  rows.forEach((row, idx)=>{
+    row.querySelector('.lbl').textContent = idx + 1;
+    const pctInput = row.querySelector('.dca-pct');
+    if(idx === 0){
+      pctInput.disabled = true;
+      pctInput.value = '';
+      pctInput.placeholder = '—';
+    } else {
+      pctInput.disabled = false;
+      pctInput.placeholder = '%';
+    }
+  });
+}
+
+document.getElementById('addRowBtn').addEventListener('click', addRow);
+addRow(); // start with exactly 1 entry
+
+dcaRowsEl.addEventListener('input', calculate);
+dcaRowsEl.addEventListener('click', (e)=>{
+  if(e.target.classList.contains('clearbtn')){
+    const rowDiv = e.target.closest('.dca-row');
+    if(dcaRowsEl.children.length > 1){
+      rowDiv.remove();
+    } else {
+      rowDiv.querySelector('.dca-price').value = '';
+      rowDiv.querySelector('.dca-lev').value = '5';
+      rowDiv.querySelector('.dca-size').value = '';
+      rowDiv.querySelector('.dca-pct').value = '';
+    }
+    refreshRowState();
+    calculate();
+  }
+});
+
+document.getElementById('btnLong').addEventListener('click', ()=>{
+  tradeType='LONG';
+  document.getElementById('btnLong').classList.add('active');
+  document.getElementById('btnShort').classList.remove('active');
+  calculate();
+});
+document.getElementById('btnShort').addEventListener('click', ()=>{
+  tradeType='SHORT';
+  document.getElementById('btnShort').classList.add('active');
+  document.getElementById('btnLong').classList.remove('active');
+  calculate();
+});
+
+['marginAdded','slPrice','feePct',
+ 'tpPrice1','tpPct1','tpPrice2','tpPct2','tpPrice3','tpPct3','tpPrice4','tpPct4'
+].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calculate);
+});
+
+/* Cascades % -> price across DCA rows, top to bottom */
+function recomputeDcaPrices(){
+  const rows = Array.from(dcaRowsEl.querySelectorAll('.dca-row'));
+  const dcaSign = tradeType === 'LONG' ? -1 : 1; // LONG: dca below avg, SHORT: dca above avg
+  let cumSize = 0, cumWeighted = 0;
+  rows.forEach((row, idx)=>{
+    const pctInput = row.querySelector('.dca-pct');
+    const priceInput = row.querySelector('.dca-price');
+    const sizeInput = row.querySelector('.dca-size');
+
+    if(idx > 0 && !pctInput.disabled && pctInput.value !== ''){
+      const prevAvg = cumSize > 0 ? (cumWeighted/cumSize) : 0;
+      if(prevAvg > 0){
+        const pct = num(pctInput.value);
+        const newPrice = prevAvg * (1 + dcaSign*(pct/100));
+        if(newPrice > 0) priceInput.value = round2(newPrice);
+      }
+    }
+    const p = num(priceInput.value);
+    const s = num(sizeInput.value);
+    if(p > 0 && s > 0){ cumSize += s; cumWeighted += p*s; }
+  });
+}
+
+/* ---------- Main calculation ---------- */
+function calculate(){
+  recomputeDcaPrices();
+
+  let totalSize = 0, totalMargin = 0, weightedSum = 0;
+  dcaRowsEl.querySelectorAll('.dca-row').forEach(row=>{
+    const p = num(row.querySelector('.dca-price').value);
+    const l = num(row.querySelector('.dca-lev').value) || 0;
+    const s = num(row.querySelector('.dca-size').value);
+    if(s > 0 && p > 0){
+      totalSize += s;
+      weightedSum += p * s;
+      totalMargin += l > 0 ? s / l : 0;
+    }
+  });
+
+  const marginAdded = num(document.getElementById('marginAdded').value);
+  const initialMargin = totalMargin + marginAdded;
+  const avgEntry = totalSize > 0 ? weightedSum / totalSize : 0;
+  const avgLeverage = initialMargin > 0 ? totalSize / initialMargin : 0;
+  const feePct = num(document.getElementById('feePct').value);
+  const dir = tradeType === 'LONG' ? 1 : -1;
+
+  /* ---- TP breakdown ---- */
+  let totalExitPct = 0, totalGrossPnlTP = 0, totalExitFee = 0;
+  const tpResults = [];
+  for(let i=1; i<=4; i++){
+    const price = num(document.getElementById('tpPrice'+i).value);
+    const pct = num(document.getElementById('tpPct'+i).value);
+    const sizeDisplay = document.getElementById('tpSize'+i);
+    const size = totalSize * (pct/100);
+
+    if(price > 0 && pct > 0){
+      sizeDisplay.textContent = fmt(size);
+      totalExitPct += pct;
+      const priceChangePct = avgEntry > 0 ? dir * ((price - avgEntry) / avgEntry) * 100 : 0;
+      const grossPnl = size * (priceChangePct / 100);
+      const exitFee = size * (feePct / 100);
+      totalGrossPnlTP += grossPnl;
+      totalExitFee += exitFee;
+      tpResults.push({ i, price, pct, size, priceChangePct, grossPnl });
+    } else {
+      sizeDisplay.textContent = '—';
+    }
+  }
+
+  const entryFee = totalSize * (feePct / 100);
+  const totalFeeTP = entryFee + totalExitFee;
+  const realPnlTP = totalGrossPnlTP - totalFeeTP;
+  const roiTP = initialMargin > 0 ? (realPnlTP / initialMargin) * 100 : 0;
+
+  // total exit % indicator
+  const tpTotalEl = document.getElementById('tpTotalPct');
+  tpTotalEl.textContent = fmt(totalExitPct, 0) + '%';
+  tpTotalEl.classList.remove('val-ok','val-warn','val-over');
+  if(totalExitPct === 100) tpTotalEl.classList.add('val-ok');
+  else if(totalExitPct > 100) tpTotalEl.classList.add('val-over');
+  else tpTotalEl.classList.add('val-warn');
+
+  /* ---- SL (full position) ---- */
+  const slPrice = num(document.getElementById('slPrice').value);
+  const slDiffPct = avgEntry > 0 ? dir * ((slPrice - avgEntry) / avgEntry) * 100 : 0;
+  const grossLoss = totalSize * (slDiffPct / 100);
+  const tradingFeeSL = totalSize * (feePct / 100) * 2;
+  const netLoss = grossLoss - tradingFeeSL;
+  const roiSl = initialMargin > 0 ? (netLoss / initialMargin) * 100 : 0;
+
+  const rr = netLoss !== 0 ? Math.abs(realPnlTP / netLoss) : 0;
+
+  /* ---- Liquidation ---- */
+  const liqPrice = avgLeverage > 0
+    ? (tradeType === 'LONG' ? avgEntry * (1 - 1/avgLeverage) : avgEntry * (1 + 1/avgLeverage))
+    : 0;
+  const liqDistPct = avgEntry > 0 ? Math.abs((liqPrice - avgEntry) / avgEntry) * 100 : 0;
+
+  /* ---- Render hero / banner ---- */
+  setVal('hTotalSize', fmt(totalSize));
+  setVal('hAvgEntry', fmt(avgEntry));
+  setVal('hLeverage', fmt(avgLeverage,2)+'x');
+  document.getElementById('rrText').textContent = '1 : ' + fmt(rr,2);
+  document.getElementById('rrNumeric').textContent = fmt(rr,2);
+
+  /* ---- Render position summary ---- */
+  setVal('rTotalSize', fmt(totalSize));
+  setVal('rAvgEntry', fmt(avgEntry));
+  setVal('rAvgLev', fmt(avgLeverage,2)+'x');
+  setVal('rInitMargin', fmt(initialMargin), 'amber');
+
+  /* ---- Render TP breakdown ---- */
+  const tpBreakdownEl = document.getElementById('tpBreakdown');
+  if(tpResults.length === 0){
+    tpBreakdownEl.innerHTML = '<div class="tp-empty">TP প্রাইস ও Exit % দিন</div>';
+  } else {
+    tpBreakdownEl.innerHTML = tpResults.map(r => `
+      <div class="tp-line">
+        <div>
+          <span class="tp-name">TP${r.i}</span>
+          <span class="tp-detail">${fmt(r.price)} · ${fmt(r.pct,0)}% · ${fmt(r.size)} USDT · ${fmt(r.priceChangePct)}%</span>
+        </div>
+        <div class="tp-pnl ${r.grossPnl>=0?'pos':'neg'}">${r.grossPnl>=0?'+':''}${fmt(r.grossPnl)}</div>
+      </div>
+    `).join('');
+  }
+  setVal('rGrossPnl', (totalGrossPnlTP>=0?'+':'')+fmt(totalGrossPnlTP), totalGrossPnlTP>=0?'pos':'neg');
+  setVal('rFee', fmt(totalFeeTP));
+  setVal('rRealPnl', (realPnlTP>=0?'+':'')+fmt(realPnlTP), realPnlTP>=0?'pos':'neg');
+  setVal('rRoi', fmt(roiTP)+'%', roiTP>=0?'pos':'neg');
+
+  /* ---- Render SL ---- */
+  setVal('rSlDiff', fmt(slDiffPct)+'%', 'neg');
+  setVal('rGrossLoss', fmt(grossLoss), 'neg');
+  setVal('rNetLoss', fmt(netLoss), 'neg');
+  setVal('rRoiSl', fmt(roiSl)+'%', 'neg');
+
+  /* ---- Render liquidation ---- */
+  document.getElementById('rLiq').textContent = fmt(liqPrice);
+  document.getElementById('rLiqDist').textContent = fmt(liqDistPct) + '%';
+}
+
+calculate();
+</script>
+</body>
+</html>
