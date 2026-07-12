@@ -52,28 +52,37 @@
   .card-title .left{ display:flex; align-items:center; gap:6px; }
   .card-title .dot{ width:5px; height:5px; border-radius:50%; background:var(--amber); }
 
-  /* DCA rows: # | % | Price | Lev | Size | clear */
+  /* DCA grid: # | % | Price | Lev | Margin | =Size | X */
   .dca-colhead{
-    display:grid; grid-template-columns:18px 42px 1fr 1fr 1fr 20px;
-    gap:5px; margin-bottom:7px;
+    display:grid; grid-template-columns:16px 38px 1fr 44px 1fr 1fr 18px;
+    gap:4px; margin-bottom:7px;
   }
-  .dca-colhead .colhead{ font-size:8.5px; color:var(--muted); text-align:center; text-transform:uppercase; letter-spacing:0.3px;}
+  .dca-colhead .colhead{
+    font-size:8px; color:var(--muted); text-align:center;
+    text-transform:uppercase; letter-spacing:0.3px;
+  }
   .dca-row{
-    display:grid; grid-template-columns:18px 42px 1fr 1fr 1fr 20px;
-    gap:5px; align-items:center; margin-bottom:7px;
+    display:grid; grid-template-columns:16px 38px 1fr 44px 1fr 1fr 18px;
+    gap:4px; align-items:center; margin-bottom:7px;
   }
-  .dca-row .lbl{ font-size:10.5px; color:var(--muted); font-weight:600; text-align:center; }
+  .dca-row .lbl{ font-size:10px; color:var(--muted); font-weight:600; text-align:center; }
   .dca-row input{
     width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--text);
-    font-family:var(--mono); font-size:12px; padding:7px 3px; border-radius:7px; text-align:center;
+    font-family:var(--mono); font-size:11.5px; padding:7px 2px; border-radius:7px; text-align:center;
     min-width:0;
   }
   .dca-row input.dca-pct{ color:var(--amber); }
   .dca-row input:disabled{ opacity:0.35; }
   .dca-row input:focus{ outline:none; border-color:var(--amber); }
   .dca-row input::placeholder{ color:#4a5563; }
+  /* auto-computed position size display */
+  .dca-possize{
+    font-family:var(--mono); font-size:11px; text-align:center; color:var(--accent-long);
+    background:var(--panel-2); border:1px dashed #18c78744; border-radius:7px;
+    padding:7px 2px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
   .clearbtn{
-    background:none; border:none; color:#4a5563; font-size:15px; cursor:pointer; padding:2px;
+    background:none; border:none; color:#4a5563; font-size:14px; cursor:pointer; padding:2px;
     line-height:1; text-align:center;
   }
   .clearbtn:active{ color:var(--accent-short); }
@@ -85,12 +94,9 @@
     display:flex; align-items:center; justify-content:center; gap:6px;
   }
   .addbtn:active{ background:#1d2530; }
-
   .hint{ font-size:10px; color:#5b6573; margin-top:6px; line-height:1.5; }
 
-  .field-row{
-    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;
-  }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
   .field{ display:flex; flex-direction:column; gap:5px; }
   .field label{ font-size:11px; color:var(--muted); font-weight:600; }
   .field input{
@@ -100,21 +106,14 @@
   .field input:focus{ outline:none; border-color:var(--amber); }
   .sl-field input{ border-color:var(--accent-short-dim); }
 
-  /* TP rows: # | Price | Exit% | Size */
-  .tp-colhead{
-    display:grid; grid-template-columns:34px 1fr 1fr 1fr;
-    gap:6px; margin-bottom:7px;
-  }
+  /* TP rows */
+  .tp-colhead{ display:grid; grid-template-columns:34px 1fr 1fr 1fr; gap:6px; margin-bottom:7px; }
   .tp-colhead .colhead{ font-size:9px; color:var(--muted); text-align:center; text-transform:uppercase; letter-spacing:0.3px;}
-  .tp-row{
-    display:grid; grid-template-columns:34px 1fr 1fr 1fr;
-    gap:6px; align-items:center; margin-bottom:7px;
-  }
+  .tp-row{ display:grid; grid-template-columns:34px 1fr 1fr 1fr; gap:6px; align-items:center; margin-bottom:7px; }
   .tp-row .lbl{ font-size:11px; color:var(--accent-long); font-weight:700; text-align:center; }
   .tp-row input{
     width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--text);
-    font-family:var(--mono); font-size:13px; padding:8px 5px; border-radius:7px; text-align:center;
-    min-width:0;
+    font-family:var(--mono); font-size:13px; padding:8px 5px; border-radius:7px; text-align:center; min-width:0;
   }
   .tp-row input:focus{ outline:none; border-color:var(--amber); }
   .tp-size-display{
@@ -212,13 +211,14 @@
       <div></div>
       <div class="colhead">%</div>
       <div class="colhead">প্রাইস</div>
-      <div class="colhead">লিভারেজ</div>
-      <div class="colhead">সাইজ</div>
+      <div class="colhead">Lev</div>
+      <div class="colhead">মার্জিন</div>
+      <div class="colhead">= সাইজ</div>
       <div></div>
     </div>
     <div id="dcaRows"></div>
     <button class="addbtn" id="addRowBtn">+ DCA এন্ট্রি যোগ করো</button>
-    <div class="hint">২য় এন্ট্রি থেকে % ঘরে সংখ্যা দিলে আগের এন্ট্রিগুলোর average price থেকে সেই % দূরত্বে প্রাইস অটো বসবে (LONG = নিচে, SHORT = উপরে)। % ফাঁকা রাখলে প্রাইস ম্যানুয়ালি দিতে পারবেন।</div>
+    <div class="hint">মার্জিন দিলে Position Size = মার্জিন × লিভারেজ হিসেবে অটো বের হবে। ২য় এন্ট্রি থেকে % দিলে আগের avg price থেকে সেই % দূরত্বে প্রাইস অটো বসবে।</div>
   </div>
 
   <!-- Margin Added -->
@@ -376,7 +376,8 @@ function addRow(){
     <input type="number" inputmode="decimal" class="dca-pct" placeholder="%">
     <input type="number" inputmode="decimal" placeholder="প্রাইস" class="dca-price">
     <input type="number" inputmode="decimal" placeholder="x" class="dca-lev" value="5">
-    <input type="number" inputmode="decimal" placeholder="সাইজ" class="dca-size">
+    <input type="number" inputmode="decimal" placeholder="USDT" class="dca-margin">
+    <div class="dca-possize">—</div>
     <button class="clearbtn" title="রিমুভ">✕</button>
   `;
   dcaRowsEl.appendChild(row);
@@ -401,7 +402,7 @@ function refreshRowState(){
 }
 
 document.getElementById('addRowBtn').addEventListener('click', addRow);
-addRow(); // start with exactly 1 entry
+addRow(); // start with 1 entry
 
 dcaRowsEl.addEventListener('input', calculate);
 dcaRowsEl.addEventListener('click', (e)=>{
@@ -412,8 +413,9 @@ dcaRowsEl.addEventListener('click', (e)=>{
     } else {
       rowDiv.querySelector('.dca-price').value = '';
       rowDiv.querySelector('.dca-lev').value = '5';
-      rowDiv.querySelector('.dca-size').value = '';
+      rowDiv.querySelector('.dca-margin').value = '';
       rowDiv.querySelector('.dca-pct').value = '';
+      rowDiv.querySelector('.dca-possize').textContent = '—';
     }
     refreshRowState();
     calculate();
@@ -439,15 +441,16 @@ document.getElementById('btnShort').addEventListener('click', ()=>{
   document.getElementById(id).addEventListener('input', calculate);
 });
 
-/* Cascades % -> price across DCA rows, top to bottom */
+/* Cascades % -> price, top to bottom using margin-based sizes */
 function recomputeDcaPrices(){
   const rows = Array.from(dcaRowsEl.querySelectorAll('.dca-row'));
-  const dcaSign = tradeType === 'LONG' ? -1 : 1; // LONG: dca below avg, SHORT: dca above avg
+  const dcaSign = tradeType === 'LONG' ? -1 : 1;
   let cumSize = 0, cumWeighted = 0;
   rows.forEach((row, idx)=>{
-    const pctInput = row.querySelector('.dca-pct');
+    const pctInput   = row.querySelector('.dca-pct');
     const priceInput = row.querySelector('.dca-price');
-    const sizeInput = row.querySelector('.dca-size');
+    const levInput   = row.querySelector('.dca-lev');
+    const marginInput= row.querySelector('.dca-margin');
 
     if(idx > 0 && !pctInput.disabled && pctInput.value !== ''){
       const prevAvg = cumSize > 0 ? (cumWeighted/cumSize) : 0;
@@ -457,9 +460,17 @@ function recomputeDcaPrices(){
         if(newPrice > 0) priceInput.value = round2(newPrice);
       }
     }
+
     const p = num(priceInput.value);
-    const s = num(sizeInput.value);
-    if(p > 0 && s > 0){ cumSize += s; cumWeighted += p*s; }
+    const l = num(levInput.value) || 1;
+    const m = num(marginInput.value);
+    const posSize = m * l; // position size = margin × leverage
+
+    // update the display cell
+    const posDisplay = row.querySelector('.dca-possize');
+    posDisplay.textContent = (m > 0 && p > 0) ? fmt(posSize) : '—';
+
+    if(p > 0 && posSize > 0){ cumSize += posSize; cumWeighted += p * posSize; }
   });
 }
 
@@ -470,88 +481,85 @@ function calculate(){
   let totalSize = 0, totalMargin = 0, weightedSum = 0;
   dcaRowsEl.querySelectorAll('.dca-row').forEach(row=>{
     const p = num(row.querySelector('.dca-price').value);
-    const l = num(row.querySelector('.dca-lev').value) || 0;
-    const s = num(row.querySelector('.dca-size').value);
-    if(s > 0 && p > 0){
-      totalSize += s;
-      weightedSum += p * s;
-      totalMargin += l > 0 ? s / l : 0;
+    const l = num(row.querySelector('.dca-lev').value) || 1;
+    const m = num(row.querySelector('.dca-margin').value);
+    const posSize = m * l;
+    if(m > 0 && p > 0){
+      totalSize   += posSize;
+      weightedSum += p * posSize;
+      totalMargin += m;
     }
   });
 
-  const marginAdded = num(document.getElementById('marginAdded').value);
+  const marginAdded  = num(document.getElementById('marginAdded').value);
   const initialMargin = totalMargin + marginAdded;
-  const avgEntry = totalSize > 0 ? weightedSum / totalSize : 0;
-  const avgLeverage = initialMargin > 0 ? totalSize / initialMargin : 0;
-  const feePct = num(document.getElementById('feePct').value);
-  const dir = tradeType === 'LONG' ? 1 : -1;
+  const avgEntry     = totalSize > 0 ? weightedSum / totalSize : 0;
+  const avgLeverage  = initialMargin > 0 ? totalSize / initialMargin : 0;
+  const feePct       = num(document.getElementById('feePct').value);
+  const dir          = tradeType === 'LONG' ? 1 : -1;
 
   /* ---- TP breakdown ---- */
   let totalExitPct = 0, totalGrossPnlTP = 0, totalExitFee = 0;
   const tpResults = [];
   for(let i=1; i<=4; i++){
     const price = num(document.getElementById('tpPrice'+i).value);
-    const pct = num(document.getElementById('tpPct'+i).value);
+    const pct   = num(document.getElementById('tpPct'+i).value);
     const sizeDisplay = document.getElementById('tpSize'+i);
-    const size = totalSize * (pct/100);
-
+    const size  = totalSize * (pct/100);
     if(price > 0 && pct > 0){
       sizeDisplay.textContent = fmt(size);
       totalExitPct += pct;
       const priceChangePct = avgEntry > 0 ? dir * ((price - avgEntry) / avgEntry) * 100 : 0;
       const grossPnl = size * (priceChangePct / 100);
-      const exitFee = size * (feePct / 100);
+      const exitFee  = size * (feePct / 100);
       totalGrossPnlTP += grossPnl;
-      totalExitFee += exitFee;
+      totalExitFee    += exitFee;
       tpResults.push({ i, price, pct, size, priceChangePct, grossPnl });
     } else {
       sizeDisplay.textContent = '—';
     }
   }
 
-  const entryFee = totalSize * (feePct / 100);
+  const entryFee   = totalSize * (feePct / 100);
   const totalFeeTP = entryFee + totalExitFee;
-  const realPnlTP = totalGrossPnlTP - totalFeeTP;
-  const roiTP = initialMargin > 0 ? (realPnlTP / initialMargin) * 100 : 0;
+  const realPnlTP  = totalGrossPnlTP - totalFeeTP;
+  const roiTP      = initialMargin > 0 ? (realPnlTP / initialMargin) * 100 : 0;
 
-  // total exit % indicator
   const tpTotalEl = document.getElementById('tpTotalPct');
   tpTotalEl.textContent = fmt(totalExitPct, 0) + '%';
   tpTotalEl.classList.remove('val-ok','val-warn','val-over');
-  if(totalExitPct === 100) tpTotalEl.classList.add('val-ok');
-  else if(totalExitPct > 100) tpTotalEl.classList.add('val-over');
-  else tpTotalEl.classList.add('val-warn');
+  if(totalExitPct === 100)     tpTotalEl.classList.add('val-ok');
+  else if(totalExitPct > 100)  tpTotalEl.classList.add('val-over');
+  else                         tpTotalEl.classList.add('val-warn');
 
   /* ---- SL (full position) ---- */
-  const slPrice = num(document.getElementById('slPrice').value);
-  const slDiffPct = avgEntry > 0 ? dir * ((slPrice - avgEntry) / avgEntry) * 100 : 0;
-  const grossLoss = totalSize * (slDiffPct / 100);
-  const tradingFeeSL = totalSize * (feePct / 100) * 2;
-  const netLoss = grossLoss - tradingFeeSL;
-  const roiSl = initialMargin > 0 ? (netLoss / initialMargin) * 100 : 0;
+  const slPrice     = num(document.getElementById('slPrice').value);
+  const slDiffPct   = avgEntry > 0 ? dir * ((slPrice - avgEntry) / avgEntry) * 100 : 0;
+  const grossLoss   = totalSize * (slDiffPct / 100);
+  const tradingFeeSL= totalSize * (feePct / 100) * 2;
+  const netLoss     = grossLoss - tradingFeeSL;
+  const roiSl       = initialMargin > 0 ? (netLoss / initialMargin) * 100 : 0;
 
   const rr = netLoss !== 0 ? Math.abs(realPnlTP / netLoss) : 0;
 
   /* ---- Liquidation ---- */
-  const liqPrice = avgLeverage > 0
-    ? (tradeType === 'LONG' ? avgEntry * (1 - 1/avgLeverage) : avgEntry * (1 + 1/avgLeverage))
+  const liqPrice   = avgLeverage > 0
+    ? (tradeType === 'LONG' ? avgEntry*(1-1/avgLeverage) : avgEntry*(1+1/avgLeverage))
     : 0;
-  const liqDistPct = avgEntry > 0 ? Math.abs((liqPrice - avgEntry) / avgEntry) * 100 : 0;
+  const liqDistPct = avgEntry > 0 ? Math.abs((liqPrice-avgEntry)/avgEntry)*100 : 0;
 
-  /* ---- Render hero / banner ---- */
+  /* ---- Render ---- */
   setVal('hTotalSize', fmt(totalSize));
-  setVal('hAvgEntry', fmt(avgEntry));
-  setVal('hLeverage', fmt(avgLeverage,2)+'x');
-  document.getElementById('rrText').textContent = '1 : ' + fmt(rr,2);
+  setVal('hAvgEntry',  fmt(avgEntry));
+  setVal('hLeverage',  fmt(avgLeverage,2)+'x');
+  document.getElementById('rrText').textContent    = '1 : ' + fmt(rr,2);
   document.getElementById('rrNumeric').textContent = fmt(rr,2);
 
-  /* ---- Render position summary ---- */
-  setVal('rTotalSize', fmt(totalSize));
-  setVal('rAvgEntry', fmt(avgEntry));
-  setVal('rAvgLev', fmt(avgLeverage,2)+'x');
+  setVal('rTotalSize',  fmt(totalSize));
+  setVal('rAvgEntry',   fmt(avgEntry));
+  setVal('rAvgLev',     fmt(avgLeverage,2)+'x');
   setVal('rInitMargin', fmt(initialMargin), 'amber');
 
-  /* ---- Render TP breakdown ---- */
   const tpBreakdownEl = document.getElementById('tpBreakdown');
   if(tpResults.length === 0){
     tpBreakdownEl.innerHTML = '<div class="tp-empty">TP প্রাইস ও Exit % দিন</div>';
@@ -567,18 +575,16 @@ function calculate(){
     `).join('');
   }
   setVal('rGrossPnl', (totalGrossPnlTP>=0?'+':'')+fmt(totalGrossPnlTP), totalGrossPnlTP>=0?'pos':'neg');
-  setVal('rFee', fmt(totalFeeTP));
-  setVal('rRealPnl', (realPnlTP>=0?'+':'')+fmt(realPnlTP), realPnlTP>=0?'pos':'neg');
-  setVal('rRoi', fmt(roiTP)+'%', roiTP>=0?'pos':'neg');
+  setVal('rFee',      fmt(totalFeeTP));
+  setVal('rRealPnl',  (realPnlTP>=0?'+':'')+fmt(realPnlTP), realPnlTP>=0?'pos':'neg');
+  setVal('rRoi',      fmt(roiTP)+'%', roiTP>=0?'pos':'neg');
 
-  /* ---- Render SL ---- */
-  setVal('rSlDiff', fmt(slDiffPct)+'%', 'neg');
+  setVal('rSlDiff',    fmt(slDiffPct)+'%', 'neg');
   setVal('rGrossLoss', fmt(grossLoss), 'neg');
-  setVal('rNetLoss', fmt(netLoss), 'neg');
-  setVal('rRoiSl', fmt(roiSl)+'%', 'neg');
+  setVal('rNetLoss',   fmt(netLoss), 'neg');
+  setVal('rRoiSl',     fmt(roiSl)+'%', 'neg');
 
-  /* ---- Render liquidation ---- */
-  document.getElementById('rLiq').textContent = fmt(liqPrice);
+  document.getElementById('rLiq').textContent     = fmt(liqPrice);
   document.getElementById('rLiqDist').textContent = fmt(liqDistPct) + '%';
 }
 
