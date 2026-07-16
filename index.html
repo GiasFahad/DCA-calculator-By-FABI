@@ -185,6 +185,26 @@
   .margin-input-card{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .margin-input-card input{ flex:1; max-width:140px; }
 
+  /* quick stats strip after DCA */
+  .quick-stats{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;
+  }
+  .qs-box{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:11px 12px;
+  }
+  .qs-box.full{ grid-column: span 2; }
+  .qs-label{ font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+  .qs-val{ font-family:var(--mono); font-size:16px; font-weight:700; }
+  .qs-val.amber{ color:var(--amber); }
+  .qs-liq{
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .qs-liq-left .qs-val{ color:var(--accent-short); font-size:16px; }
+  .qs-liq-right{ text-align:right; }
+  .qs-liq-right .qs-val{ color:var(--accent-short); font-size:14px; }
+  .qs-liq-right .qs-label{ margin-bottom:2px; }
+
   .footnote{ font-size:10px; color:#4a5563; text-align:center; margin-top:8px; line-height:1.5; }
 </style>
 </head>
@@ -219,6 +239,34 @@
     <div id="dcaRows"></div>
     <button class="addbtn" id="addRowBtn">+ DCA এন্ট্রি যোগ করো</button>
     <div class="hint">মার্জিন দিলে Position Size = মার্জিন × লিভারেজ হিসেবে অটো বের হবে। ২য় এন্ট্রি থেকে % দিলে আগের avg price থেকে সেই % দূরত্বে প্রাইস অটো বসবে।</div>
+  </div>
+
+  <!-- Quick Stats after DCA -->
+  <div class="quick-stats">
+    <div class="qs-box">
+      <div class="qs-label">Total Position</div>
+      <div class="qs-val" id="qsTotalSize">0.00</div>
+    </div>
+    <div class="qs-box">
+      <div class="qs-label">Avg Entry Price</div>
+      <div class="qs-val amber" id="qsAvgEntry">0.00</div>
+    </div>
+    <div class="qs-box">
+      <div class="qs-label">Avg Leverage</div>
+      <div class="qs-val" id="qsAvgLev">0.00x</div>
+    </div>
+    <div class="qs-box">
+      <div class="qs-label">⚠️ Liquidation Price</div>
+      <div class="qs-liq">
+        <div class="qs-liq-left">
+          <div class="qs-val" id="qsLiq">0.00</div>
+        </div>
+        <div class="qs-liq-right">
+          <div class="qs-label">Entry থেকে</div>
+          <div class="qs-val" id="qsLiqDist">0.00%</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Margin Added -->
@@ -548,7 +596,14 @@ function calculate(){
     : 0;
   const liqDistPct = avgEntry > 0 ? Math.abs((liqPrice-avgEntry)/avgEntry)*100 : 0;
 
-  /* ---- Render ---- */
+  /* ---- Render quick stats ---- */
+  document.getElementById('qsTotalSize').textContent = fmt(totalSize);
+  document.getElementById('qsAvgEntry').textContent  = fmt(avgEntry);
+  document.getElementById('qsAvgLev').textContent    = fmt(avgLeverage,2)+'x';
+  document.getElementById('qsLiq').textContent       = fmt(liqPrice);
+  document.getElementById('qsLiqDist').textContent   = fmt(liqDistPct)+'%';
+
+  /* ---- Render hero ---- */
   setVal('hTotalSize', fmt(totalSize));
   setVal('hAvgEntry',  fmt(avgEntry));
   setVal('hLeverage',  fmt(avgLeverage,2)+'x');
